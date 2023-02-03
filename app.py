@@ -116,7 +116,7 @@ def classification_label(sample_file: str, label_file: str):
     # label for classification tasks
     register = st.empty()
     theend = st.empty()
-    para_list = [[format(x) for x in s.split('\n')] for s in samples]
+    para_list = [s.split('\n') for s in samples]
     is_done = False
 
     while True:
@@ -141,7 +141,7 @@ def classification_label(sample_file: str, label_file: str):
                 new_tag = NewSample(num, para, labels)
                 if st.form_submit_button(f'submit {num+1}/{len(para_list)}'):
                     st.session_state.data.append({
-                        # 'id': num,
+                    # 'id': num,
                         'target': new_tag.target,
                         'content': new_tag.content,
                     })
