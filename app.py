@@ -54,9 +54,10 @@ class NewSample(object):
     def __init__(self, item_id: int, paragraph: List[str], choices: Tuple[str,
                                                                           str]):
         self.item_id = item_id
-        self.content = '\n'.join(paragraph)
+        self.content = paragraph
         self.choices = (str(c) for c in choices)
-        st.text_area('对话内容', self.content, height=130)
+        cf.info(self.content)
+        st.text_area('对话内容', '\n'.join(self.content), height=130)
         st.write('选择对应的的标签值（可多选）：')
         _tag_values = []
         for c in self.choices:
@@ -65,7 +66,7 @@ class NewSample(object):
         self.target = ','.join(_tag_values)
 
     def persist(self):
-        content = self.content.replace('\n', '/')
+        content = '/'.join(self.content)
         md5 = cf.utils.md5sum(content)
         insert(md5, content, self.target)
 
@@ -80,14 +81,14 @@ def add_download_link():
     with open(dbfile, "rb") as fp:
         btn = st.download_button(label="下载标注结果(sqlite3 db 文件)",
                                  data=fp,
-                                 file_name="labelled_tag.db",
+                                 file_name="/tmp/labelled_tag.db",
                                  mime="application/octet-stream")
     conn = sqlite3.connect(dbfile,
                            isolation_level=None,
                            detect_types=sqlite3.PARSE_COLNAMES)
     db_df = pd.read_sql_query("SELECT * FROM tags", conn)
-    db_df.to_csv('labelled_tag.csv', index=False)
-    with open("labelled_tag.csv", "rb") as fp:
+    db_df.to_csv('/tmp/labelled_tag.csv', index=False)
+    with open("/tmp/labelled_tag.csv", "rb") as fp:
         btn = st.download_button(label="下载标注结果(csv 文件)",
                                  data=fp,
                                  file_name="labelled_tag.csv",
@@ -116,7 +117,8 @@ def classification_label(sample_file: str, label_file: str):
     # label for classification tasks
     register = st.empty()
     theend = st.empty()
-    para_list = [s.split('\n') for s in samples]
+    para_list = [s.replace('\\n', '\n').split('\n') for s in samples]
+    cf.info(para_list)
     is_done = False
 
     while True:
